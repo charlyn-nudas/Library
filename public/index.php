@@ -9,12 +9,11 @@
 
     $app = new \Slim\App;
 
-    // Register
+    // REGISTER ACCOUNT
     $app->post('/user/register', function (Request $request, Response $response, array $args) {
 
         $data = json_decode($request->getBody(), false);
         
-        // Check if data is an array (multiple users)
         if (!is_array($data)) {
             $data = [$data];
         }
@@ -71,7 +70,7 @@
         return $response;
     });    
 
-    // Login 
+    // LOGIN ACCOUNT
     $app->post('/user/login', function (Request $request, Response $response, array $args) {
         $data = json_decode($request->getBody());
         
@@ -86,8 +85,7 @@
         try {
             $conn = new PDO("mysql:host=$servername;dbname=$dbname", $username, $dbpassword);
             $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-            
-            // Updated query to use username instead of email
+
             $sql = "SELECT userid, username, password, access_level FROM users WHERE username = :username";
             $statement = $conn->prepare($sql);
             $statement->execute(['username' => $uname]);
@@ -166,8 +164,8 @@
         return $response;
     });
  
-    //Authors API
-    //Add Author (Admin)
+    //AUTHORS API
+    //ADD AUTHOR (ADMIN SIDE)
     $app->post("/add/authors", function (Request $request, Response $response, array $args) {
         $data = json_decode($request->getBody());
 
@@ -203,7 +201,6 @@
                 $failed_authors = [];
 
                 foreach ($authors as $authorname) {
-                    // Check if author already exists
                     $sql = "SELECT authorid FROM authors WHERE authorname = :authorname";
                     $statement = $conn->prepare($sql);
                     $statement->execute(['authorname' => $authorname]);
@@ -217,7 +214,6 @@
                         continue;
                     }
 
-                    // Insert the new author
                     $sql = "INSERT INTO authors (authorname) VALUES (:authorname)";
                     $statement = $conn->prepare($sql);
                     $statement->execute([":authorname" => $authorname]);
@@ -225,7 +221,6 @@
                     $successful_authors[] = $authorname;
                 }
 
-                // Generate a new JWT token
                 $expire = time();
                 $payload = [
                     'iss' => 'http://library.org',
@@ -241,12 +236,10 @@
 
                 $new_jwt = JWT::encode($payload, $key, 'HS256');
 
-                // Update the user's token in the database
                 $sql = "UPDATE users SET token = :token WHERE userid = :userid";
                 $statement = $conn->prepare($sql);
                 $statement->execute(['token' => $new_jwt, 'userid' => $userid]);
 
-                // Return the response with the new token
                 $response->getBody()->write(json_encode(array(
                     "status" => "success",
                     "message" => "Authors processed successfully.",
@@ -275,7 +268,7 @@
         return $response;
     });
      
-    //Update Author (Admin)
+    //UPDATE AUTHOR (ADMIN SIDE)
     $app->post("/update/authors", function(Request $request, Response $response, array $args) {
         $data = json_decode($request->getBody());
     
@@ -405,9 +398,8 @@
         $conn = null;
         return $response;
     });
-    
-
-    //Delete Author (Admin)
+ 
+    //DELETE AUTHOR (ADMIN SIDE)
     $app->delete("/delete/authors", function(Request $request, Response $response, array $args) {
         $data = json_decode($request->getBody());
         
@@ -438,8 +430,7 @@
     
                 $userid = $decoded->data->userid;
                 $access_level = $decoded->data->access_level;
-    
-                // Verify user token
+
                 $sql = "SELECT username, password, token FROM users WHERE userid = :userid";
                 $statement = $conn->prepare($sql);
                 $statement->execute(['userid' => $userid]);
@@ -452,20 +443,18 @@
                     ]));
                     return $response;
                 }
-        
-                // Check if the author exists
+
                 $sql = "SELECT * FROM authors WHERE authorid = :authorid";
                 $statement = $conn->prepare($sql);
                 $statement->execute(['authorid' => $authorid]);
                 $existingAuthor = $statement->fetch(PDO::FETCH_ASSOC);
         
                 if ($existingAuthor) {
-                    // Delete the author
+                  
                     $sql = "DELETE FROM authors WHERE authorid = :authorid";
                     $statement = $conn->prepare($sql);
                     $statement->execute(['authorid' => $authorid]);
-    
-                    // Generate a new token
+
                     $expire = time();
                     $payload = [
                         'iss' => 'http://library.org',
@@ -481,7 +470,6 @@
     
                     $new_jwt = JWT::encode($payload, $key, 'HS256');
     
-                    // Update the token in the database
                     $sql = "UPDATE users SET token = :token WHERE userid = :userid";
                     $statement = $conn->prepare($sql);
                     $statement->execute(['token' => $new_jwt, 'userid' => $userid]);
@@ -514,9 +502,8 @@
         $conn = null;
         return $response;
     });
-    
 
-    //Display all Authors 
+    //DISPLAY ALL AUTHORS
     $app->get("/display/authors", function (Request $request, Response $response, array $args) {
         $servername = "localhost";
         $username = "root";
@@ -537,7 +524,6 @@
                 $userid = $decoded->data->userid;
                 $access_level = $decoded->data->access_level;
     
-                // Verify the token
                 $sql = "SELECT username, password, token FROM users WHERE userid = :userid";
                 $statement = $conn->prepare($sql);
                 $statement->execute(['userid' => $userid]);
@@ -551,14 +537,13 @@
                     return $response;
                 }
     
-                // Fetch all authors
                 $sql = "SELECT * FROM authors";
                 $statement = $conn->query($sql);
                 $authorsCount = $statement->rowCount();
                 $authors = $statement->fetchAll(PDO::FETCH_ASSOC);
     
                 if ($authorsCount > 0) {
-                    // Generate a new token
+            
                     $expire = time();
                     $payload = [
                         'iss' => 'http://library.org',
@@ -574,12 +559,10 @@
     
                     $new_jwt = JWT::encode($payload, $key, 'HS256');
     
-                    // Update the token in the database
                     $sql = "UPDATE users SET token = :token WHERE userid = :userid";
                     $statement = $conn->prepare($sql);
                     $statement->execute(['token' => $new_jwt, 'userid' => $userid]);
     
-                    // Send success response with authors and new token
                     $response->getBody()->write(json_encode([
                         "status" => "success",
                         "authors" => $authors,
@@ -607,10 +590,9 @@
         $conn = null;
         return $response;
     });
-       
-
-    //Users API
-    //Display all Users (Admin)
+    
+    //USERS API
+    //DISPLAY ALL USERS (ADMIN SIDE)
     $app->get("/displayall/users", function (Request $request, Response $response, array $args) {
         $servername = "localhost";
         $username = "root";
@@ -715,7 +697,7 @@
         return $response;
     });
 
-    //Delete User(Admin)
+    //DELETE USER (ADMIN SIDE)
     $app->delete("/delete/users", function(Request $request, Response $response, array $args) {
         $data = json_decode($request->getBody());
     
@@ -817,14 +799,12 @@
         $conn = null;
         return $response;
     });
-
     
-    //Books API
-    //Add Book (Admin) 
+    //BOOKS API
+    //ADD BOOK (ADMIN SIDE) 
     $app->post("/add/books", function(Request $request, Response $response, array $args) {
         $data = json_decode($request->getBody());
-        
-        // Retrieve the array of books
+     
         $books = $data->books; 
         $servername = "localhost";
         $username = "root";
@@ -836,8 +816,7 @@
         
         try {
             $decoded = JWT::decode($jwt, new Key($key, 'HS256'));
-            
-            // Check access level
+    
             if (!isset($decoded->data->access_level) || $decoded->data->access_level !== 'admin') {
                 $response->getBody()->write(json_encode([
                     "status" => "fail",
@@ -852,8 +831,7 @@
                 
                 $userid = $decoded->data->userid;
                 $access_level = $decoded->data->access_level;
-                
-                // Validate token
+              
                 $sql = "SELECT username, password, token FROM users WHERE userid = :userid";
                 $statement = $conn->prepare($sql);
                 $statement->execute(['userid' => $userid]);
@@ -866,19 +844,16 @@
                     ]));
                     return $response;
                 }
-                
-                // Prepare SQL queries
+          
                 $insertBookSQL = "INSERT INTO books (title, genre, authorid, bookCode) VALUES (:title, :genre, :authorid, :bookCode)";
                 $insertCollectionSQL = "INSERT INTO books_collection (bookid, authorid) VALUES (:bookid, :authorid)";
                 $authorMap = [];
-                
-                // Process each book
+              
                 foreach ($books as $book) {
                     $author = $book->author;
                     $title = $book->title;
                     $genre = $book->genre;
-                    
-                    // Check if author exists
+                
                     if (!isset($authorMap[$author])) {
                         $sql = "SELECT authorid FROM authors WHERE authorname = :author";
                         $statement = $conn->prepare($sql);
@@ -886,7 +861,7 @@
                         $existing_author = $statement->fetch(PDO::FETCH_ASSOC);
                         
                         if (!$existing_author) {
-                            // Insert new author
+                           
                             $sql = "INSERT INTO authors (authorname) VALUES (:author)";
                             $statement = $conn->prepare($sql);
                             $statement->execute(['author' => $author]);
@@ -898,24 +873,20 @@
                     } else {
                         $authorid = $authorMap[$author];
                     }
-                    
-                    // Generate unique bookCode
+                 
                     $numbers = rand(100, 999);
                     $letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
                     $letterCode = $letters[rand(0, strlen($letters) - 1)] . $letters[rand(0, strlen($letters) - 1)];
                     $bookCode = $numbers . $letterCode;
-                    
-                    // Insert book
+                 
                     $statement = $conn->prepare($insertBookSQL);
                     $statement->execute(['title' => $title, 'genre' => $genre, 'authorid' => $authorid, 'bookCode' => $bookCode]);
                     $bookid = $conn->lastInsertId();
-                    
-                    // Insert into books_collection
+                 
                     $stmnt = $conn->prepare($insertCollectionSQL);
                     $stmnt->execute(['bookid' => $bookid, 'authorid' => $authorid]);
                 }
-                
-                // Generate new token
+             
                 $expire = time();
                 $payload = [
                     'iss' => 'http://library.org',
@@ -929,13 +900,11 @@
                     ]
                 ];
                 $new_jwt = JWT::encode($payload, $key, 'HS256');
-                
-                // Update token in the database
+            
                 $sql = "UPDATE users SET token = :token WHERE userid = :userid";
                 $statement = $conn->prepare($sql);
                 $statement->execute(['token' => $new_jwt, 'userid' => $userid]);
-                
-                // Success response
+             
                 $response->getBody()->write(json_encode([
                     "status" => "success",
                     "message" => "Books successfully added.",
@@ -958,8 +927,7 @@
         return $response;
     });
     
-    
-    //Update Book (Admin)
+    //UPDATE BOOK (ADMIN SIDE)
     $app->post("/update/books", function(Request $request, Response $response, array $args) {
         $data = json_decode($request->getBody());
     
@@ -1138,9 +1106,8 @@
         $conn = null;
         return $response;
     });    
-    
 
-    //Delete Book (Admin)
+    //DELETE BOOK (ADMIN SIDE)
     $app->delete("/delete/books", function(Request $request, Response $response, array $args) {
         $data = json_decode($request->getBody());
     
@@ -1235,7 +1202,7 @@
         return $response;
     });
 
-    //Display all Books
+    //DISPLAY ALL BOOKS
     $app->get("/displayall/books", function (Request $request, Response $response, array $args) {
         $servername = "localhost";
         $username = "root";
@@ -1328,7 +1295,7 @@
         return $response;
     }); 
 
-    //Display Books by author
+    //DISPLAY BOOK BY AUTHOR
     $app->get("/display/authorsbooks", function (Request $request, Response $response, array $args) {
         $data=json_decode($request->getBody());
         
@@ -1430,7 +1397,7 @@
         return $response;
     });
 
-    //Display Books by title
+    //DISPLAY BOOKS BY TITLE
     $app->get("/display/titlebooks", function (Request $request, Response $response, array $args) {
         $data=json_decode($request->getBody());
         
@@ -1533,7 +1500,7 @@
         return $response;
     });
 
-    //Display Books by genre
+    //DISPLAY BOOKS BY GENRE
     $app->get("/display/genrebooks", function (Request $request, Response $response, array $args) {
         $data=json_decode($request->getBody());
         
