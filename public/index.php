@@ -610,7 +610,6 @@
        
 
     //Users API
-
     //Display all Users (Admin)
     $app->get("/displayall/users", function (Request $request, Response $response, array $args) {
         $servername = "localhost";
@@ -820,13 +819,13 @@
     });
 
     
-        //Books API
+    //Books API
     //Add Book (Admin) 
     $app->post("/add/books", function(Request $request, Response $response, array $args) {
         $data = json_decode($request->getBody());
         
         // Retrieve the array of books
-        $books = $data->books; // Expected to be an array of book objects
+        $books = $data->books; 
         $servername = "localhost";
         $username = "root";
         $password = "";
