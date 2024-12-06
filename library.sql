@@ -37,8 +37,6 @@ CREATE TABLE `authors` (
 --
 
 INSERT INTO `authors` (`authorid`, `authorname`) VALUES
-(322, 'Author 1')
-(323, 'Author 2'),
 (324, 'Author 3'),
 (325, 'Author 4'),
 (326, 'Author 5'),
@@ -131,6 +129,8 @@ INSERT INTO `authors` (`authorid`, `authorname`) VALUES
 (419, 'Author 98'),
 (420, 'Author 99'),
 (421, 'Author 100');
+(422, 'Author 101'),
+(423, 'Author 102')
 
 
 -- --------------------------------------------------------
@@ -152,8 +152,6 @@ CREATE TABLE `books` (
 --
 
 INSERT INTO `books` (`bookid`, `title`, `genre`, `authorid`, `bookCode`) VALUES
-(141, 'Book Title One', 'Fiction', 322, 'AB123'),
-(142, 'Book Title Two', 'Fantasy', 323, 'CD456'),
 (143, 'Book Title Three', 'Science', 324, 'EF789'),
 (144, 'Book Title Four', 'Mystery', 325, 'GH012'),
 (145, 'Book Title Five', 'History', 326, 'IJ345'),
@@ -251,7 +249,9 @@ INSERT INTO `books` (`bookid`, `title`, `genre`, `authorid`, `bookCode`) VALUES
 (237, 'Book Title Ninety-Seven', 'Fantasy', 418, 'KL901'),
 (238, 'Book Title Ninety-Eight', 'Science', 419, 'MN234'),
 (239, 'Book Title Ninety-Nine', 'Mystery', 420, 'OP567'),
-(240, 'Book Title One Hundred', 'History', 421, 'QR890');
+(240, 'Book Title One Hundred', 'History', 421, 'QR890'),
+(241, 'Book Title One Hundred-One', 'History', 422, 'ST123'),
+(242, 'Book Title One Hundred-Two', 'History', 423, 'UV456');
 
 
 
@@ -274,8 +274,6 @@ CREATE TABLE `books_collection` (
 --
 
 INSERT INTO `books_collection` (`collectionid`, `bookid`, `authorid`) VALUES
-(1, 141, 322),
-(2, 142, 323),
 (3, 143, 324),
 (4, 144, 325),
 (5, 145, 326),
@@ -373,8 +371,9 @@ INSERT INTO `books_collection` (`collectionid`, `bookid`, `authorid`) VALUES
 (97, 237, 418),
 (98, 238, 419),
 (99, 239, 420),
-(100, 240, 421);
-
+(100, 240, 421),
+(101, 241, 422),
+(102, 242, 423);
 
 -- --------------------------------------------------------
 
@@ -395,8 +394,8 @@ CREATE TABLE `users` (
 --
 
 
-INSERT INTO `users` (`userid`, `username`, `password`, `access_level`, `token`) VALUES
-
+INSERT INTO `users` (`userid`, `username`, `password`, `access_level`, `token`, `email`, `created_at` ) VALUES
+(126, 'user2', '$2y$10$Ki9ucnBDZZaeSM5pyiaV8e.EgUpyIuiWoFTWj.nCaafzfvYjQlcRy', 'admin', 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJodHRwOi8vbGlicmFyeS5vcmciLCJhdWQiOiJodHRwOi8vbGlicmFyeS5jb20iLCJpYXQiOjE3MzM0OTAxMDAsImV4cCI6MTczMzQ5MzcwMCwiZGF0YSI6eyJ1c2VyaWQiOjEyNiwibmFtZSI6InJvb3QiLCJhY2Nlc3NfbGV2ZWwiOiJhZG1pbiJ9fQ.V_xiK7CYb1I_w4sl1Yur6VxZKv77wI2wk-W4IUh8EyM', '', 2024-12-06 21:00:07 )
 
 -- --------------------------------------------------------
   
